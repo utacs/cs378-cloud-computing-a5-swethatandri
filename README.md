@@ -2,19 +2,27 @@
 
 ## Team members' names 
 
-1. Student Name:
+1. Student Name: Hannah Kim
 
-   Student UT EID:
+   Student UT EID: hk25684
 
-2. Student Name:
+2. Student Name: Noah Hodge
 
-   Student UT EID:
+   Student UT EID: nah2664
+
+3. Student Name: Janet Kim
+
+   Student UT EID: jk48674
+
+4. Student Name: Swetha Tandri
+
+   Student UT EID: sgt635
 
  ...
 
 ##  Course Name: CS378 - Cloud Computing 
 
-##  Unique Number: 51515
+##  Unique Number: 84744
     
 
 
