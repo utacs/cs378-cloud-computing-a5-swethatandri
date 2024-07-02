@@ -49,12 +49,11 @@ public class WordCountReducer extends  Reducer<Text, FloatWritable, FloatWritabl
     public void cleanup(Context context) throws IOException, InterruptedException {
         //calculate the m and b values.
         float numeratorM = (count * sumXY) - (sumX * sumY);
-        float denomM = (count * sumX2) - (sumX * sumX);
-        float m = numeratorM / denomM;
-
         float numeratorB = (sumY * sumX2) - (sumX * sumXY);
-        float denomB = (count * sumX2) - (sumX * sumX);
-        float b = numeratorB / denomB;
+        float denom = (count * sumX2) - (sumX * sumX);
+        
+        float m = numeratorM / denom;
+        float b = numeratorB / denom;
 
         //Write calculated slope and intercept to context
         context.write(new FloatWritable(m), new FloatWritable(b));
