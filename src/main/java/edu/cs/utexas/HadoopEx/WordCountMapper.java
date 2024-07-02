@@ -1,17 +1,15 @@
 package edu.cs.utexas.HadoopEx;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class WordCountMapper extends Mapper<Object, Text, FloatWritable, FloatWritable> {
+public class WordCountMapper extends Mapper<Object, Text, Text, FloatWritable> {
 
-	private FloatWritable trip_dist_x = new FloatWritable();
-	private FloatWritable fare_amount_y = new FloatWritable();
+	private Text MapKey = new Text();
+	private FloatWritable MapValue = new FloatWritable();
 
 	public void map(Object key, Text value, Context context) 
 			throws IOException, InterruptedException {
@@ -20,12 +18,32 @@ public class WordCountMapper extends Mapper<Object, Text, FloatWritable, FloatWr
 
 		//clean up step. true if valid line, false if invalid line.
 		if(cleanUpData(data)) {
-			//set trip_distance and fare_amount as floatwritable
-			trip_dist_x.set(Float.parseFloat(data[5]));
-			fare_amount_y.set(Float.parseFloat(data[11]));
+			float tripDist = Float.parseFloat(data[5]);
+			float fareAmount = Float.parseFloat(data[11]);
 
-			//Write to context
-			context.write(trip_dist_x, fare_amount_y);
+			//sum of trip distance
+			MapKey.set("SUM_X");
+			MapValue.set(tripDist);
+			context.write(MapKey, MapValue);
+
+			//sum of fare amount
+			MapKey.set("SUM_Y");
+			MapValue.set(fareAmount);
+			context.write(MapKey, MapValue);
+
+			//sum of product of trip dist and fare amount
+			MapKey.set("SUM_XY");
+			MapValue.set(tripDist * fareAmount);
+			context.write(MapKey, MapValue);
+
+			//sum of trip distance ^ 2
+			MapKey.set("SUM_X2");
+			MapValue.set(tripDist * tripDist);
+			context.write(MapKey, MapValue);
+
+			MapKey.set("COUNT");
+			MapValue.set(1);
+			context.write(MapKey, MapValue);
 		}
 	}
 
