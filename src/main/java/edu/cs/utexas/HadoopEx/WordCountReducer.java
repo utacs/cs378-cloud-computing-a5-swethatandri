@@ -2,21 +2,61 @@ package edu.cs.utexas.HadoopEx;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class WordCountReducer extends  Reducer<Text, IntWritable, Text, IntWritable> {
+public class WordCountReducer extends  Reducer<Text, FloatWritable, FloatWritable, FloatWritable> {
 
-   public void reduce(Text text, Iterable<IntWritable> values, Context context)
+    private float sumX = 0;
+	private float sumY = 0;
+	private float sumXY = 0;
+	private float sumX2 = 0;
+	private float count = 0;
+
+    public void reduce(Text text, Iterable<FloatWritable> values, Context context)
            throws IOException, InterruptedException {
 	   
-       int sum = 0;
+       float sum = 0;
        
-       for (IntWritable value : values) {
+       //Add up value that has matching keys.
+       for (FloatWritable value : values) {
            sum += value.get();
        }
        
-       context.write(text, new IntWritable(sum));
-   }
+       //accumulate sum based on the key received from the mapper
+       switch (text.toString()) {
+            case "SUM_X":
+                sumX = sum;
+                break;
+            case "SUM_Y":
+                sumY = sum;
+                break;
+            case "SUM_XY":
+                sumXY = sum;
+                break;
+            case "SUM_X2":
+                sumX2 = sum;
+                break;
+            case "COUNT":
+                count = sum;
+                break;
+        }
+    }
+
+    @Override
+    // Calculate the slope variable(m) and the y-intercept variable(b) using linear regression formula.
+    public void cleanup(Context context) throws IOException, InterruptedException {
+        //calculate the m and b values.
+        float numeratorM = (count * sumXY) - (sumX * sumY);
+        float denomM = (count * sumX2) - (sumX * sumX);
+        float m = numeratorM / denomM;
+
+        float numeratorB = (sumY * sumX2) - (sumX * sumXY);
+        float denomB = (count * sumX2) - (sumX * sumX);
+        float b = numeratorB / denomB;
+
+        //Write calculated slope and intercept to context
+        context.write(new FloatWritable(m), new FloatWritable(b));
+    }
 }
