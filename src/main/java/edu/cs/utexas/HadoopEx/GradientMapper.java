@@ -19,7 +19,8 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         double y = Double.parseDouble(fields[11]); // fare amount
 
         // calculates the shared error portion for partials
-        double error = y - (m * x + b);
+        // evaluates to all 0's for testing.csv
+        double error = y - ((m * x) + b);
 
         // calculates individual partial formulas (before applying sum and outside operations)
         // adds to mapper
@@ -34,7 +35,7 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         context.write(MapKey, MapValue);
 
         MapKey.set("COUNT");
-		MapValue.set(1);
+		MapValue.set(1.0);
 		context.write(MapKey, MapValue);
     }
 }

@@ -6,7 +6,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
-    private static final double LEARNING_RATE = 0.1;
+    private static final double LEARNING_RATE = 0.001;
     private double m = 2.0;
     private double b = 3.0;
     private double count = 0.0;
@@ -22,9 +22,11 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         // sums up all vals w/ same key
         for (DoubleWritable val : values) {
             sum += val.get();
-            count++;
-        }
 
+            // use to check what values pushing through
+            // context.write (new Text("VAL GOTTEN: "), new DoubleWritable(val.get()));
+        }
+        
         // set sum to the respective variable
         switch (key.toString()) {
             case "mGradient":
@@ -33,7 +35,12 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
             case "bGradient":
                 bSum = sum;
                 break;
+            case "COUNT":
+                count = sum;
+                break;
         }
+        // use to check count (N)
+        // context.write (new Text("count"), new DoubleWritable(count));
     }
 
     @Override
@@ -46,9 +53,11 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
 
         // adjusts m and b based on partial deriv
         // unsure if learning rate supposed to be here
+        // mPartial and bPartial = 0 in testing.csv
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
 
+        // write out new predicted m and b
         context.write(new Text("m"), new DoubleWritable(m));
         context.write(new Text("b"), new DoubleWritable(b));
     }
