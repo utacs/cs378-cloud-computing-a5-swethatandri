@@ -1,14 +1,16 @@
 package edu.cs.utexas.HadoopEx;
+import java.io.IOException;
+
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import java.io.IOException;
-
 public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-    private double m = 0.0;
-    private double b = 0.0;
+    private final double m = 2.0;
+    private final double b = 3.0;
+    private Text MapKey = new Text();
+	private DoubleWritable MapValue = new DoubleWritable();
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -16,10 +18,23 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         double x = Double.parseDouble(fields[5]); // trip distance
         double y = Double.parseDouble(fields[11]); // fare amount
 
-        double prediction = m * x + b;
-        double error = y - prediction;
+        // calculates the shared error portion for partials
+        double error = y - (m * x + b);
 
-        context.write(new Text("mGradient"), new DoubleWritable(-2 * x * error));
-        context.write(new Text("bGradient"), new DoubleWritable(-2 * error));
+        // calculates individual partial formulas (before applying sum and outside operations)
+        // adds to mapper
+        double mGradient = -x * (error);
+        MapKey.set("mGradient");
+		MapValue.set(mGradient);
+        context.write(MapKey, MapValue);
+
+        double bGradient = -(error);
+        MapKey.set("bGradient");
+		MapValue.set(bGradient);
+        context.write(MapKey, MapValue);
+
+        MapKey.set("COUNT");
+		MapValue.set(1);
+		context.write(MapKey, MapValue);
     }
 }
