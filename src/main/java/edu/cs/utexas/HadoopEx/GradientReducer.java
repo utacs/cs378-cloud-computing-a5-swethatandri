@@ -59,10 +59,10 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
 
-        //updating the new predicted m and b?
-        // Configuration conf = context.getConfiguration();
-        // conf.set("new m", Double.toString(m));
-        // conf.set("new b", Double.toString(b));
+        //updating the new predicted m and b to config to pass new val to mapper in next iteration
+        Configuration conf = context.getConfiguration();
+        conf.set("new m", Double.toString(m));
+        conf.set("new b", Double.toString(b));
 
         // write out new predicted m and b
         context.write(new Text("m"), new DoubleWritable(m));

@@ -51,45 +51,47 @@ public class WordCount extends Configured implements Tool {
 
 			//Task 2
 			//initialize m and b = learning rate
-			//update the value with each iteration and pass it onto the mapper
-			// double m = 0.001;
-			// double b = 0.001;
-
-			//int num_iteration = 100; //uhhh where to put the for loops...
-
-			Job job = new Job(conf, "GradientDescentParams");
-			job.setJarByClass(WordCount.class);
-
+			double m = 0.001;
+			double b = 0.001;
 			//Set the m and b variables before mapping
-			//conf.set("m", Double.toString(m));
-			//conf.set("b", Double.toString(b));
+			conf.set("m", Double.toString(m));
+			conf.set("b", Double.toString(b));
 
-			//pass the m and b values to the mapper. Gets from conf.
-			job.setMapperClass(GradientMapper.class);
-			//reducer sets new m and b val to conf
-			job.setReducerClass(GradientReducer.class);
+			int num_iteration = 100;
+			for(int i = 0; i < num_iteration; i++) {
+				Job job = new Job(conf, "GradientDescentParams");
+				job.setJarByClass(WordCount.class);
+				//pass the m and b values to the mapper. Gets from conf.
+				job.setMapperClass(GradientMapper.class);
+				//reducer sets new m and b val to conf
+				job.setReducerClass(GradientReducer.class);
 
-			//Write the new predicted val of m and b
-			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(DoubleWritable.class);
+				//Write the new predicted val of m and b
+				job.setOutputKeyClass(Text.class);
+				job.setOutputValueClass(DoubleWritable.class);
 
-			//update the m and b val with the new predicted values
-			//m = Double.parseDouble(conf.get("new m"));
-			//b = Double.parseDouble(conf.get("new b"));
+				FileInputFormat.addInputPath(job, new Path(args[0]));
+				job.setInputFormatClass(TextInputFormat.class);
+				FileOutputFormat.setOutputPath(job, new Path(args[1]));
+				job.setOutputFormatClass(TextOutputFormat.class);
 
-			//DEBUGGING: checking if the new predicted vals are getting updated.
-			//System.out.println("new m : " + m + "new b : " + b);
-			FileInputFormat.addInputPath(job, new Path(args[0]));
-			job.setInputFormatClass(TextInputFormat.class);
-			FileOutputFormat.setOutputPath(job, new Path(args[1]));
-			job.setOutputFormatClass(TextOutputFormat.class);
+				//Get one final output
+				job.setNumReduceTasks(1);
 
-			//Get one final output
-			job.setNumReduceTasks(1);
+				//Job is completed.
+				if(!job.waitForCompletion(true)) {
+					return 1;
+				}
 
-			//Job is completed.
-			return (job.waitForCompletion(true) ? 0 : 1);
+				//update the m and b val with the new predicted values
+				m = Double.parseDouble(job.getConfiguration().get("new m"));
+				b = Double.parseDouble(job.getConfiguration().get("new b"));
 
+				conf.set("m", Double.toString(m));
+				conf.set("b", Double.toString(b));
+		}
+
+		return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
 			System.err.println("Error during mapreduce job.");
