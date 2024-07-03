@@ -64,13 +64,17 @@ public class WordCount extends Configured implements Tool {
 			conf.set("m", Double.toString(m));
 			conf.set("b", Double.toString(b));
 
-			//pass the m and b values to the mapper
+			//pass the m and b values to the mapper. Gets from conf.
 			job.setMapperClass(GradientMapper.class);
+			//reducer sets new m and b val to conf
 			job.setReducerClass(GradientReducer.class);
-			
+
 			//update the m and b val with the new predicted values
-			m = Double.parseDouble(conf.get("m"));
-			b = Double.parseDouble(conf.get("b"));
+			m = Double.parseDouble(conf.get("new m"));
+			b = Double.parseDouble(conf.get("new b"));
+
+			//DEBUGGING: checking if the new predicted vals are getting updated.
+			System.out.println("new m : " + m + "new b : " + b);
 
 			//Write the new predicted val of m and b
 			job.setOutputKeyClass(Text.class);

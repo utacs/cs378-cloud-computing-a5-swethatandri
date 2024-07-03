@@ -28,6 +28,9 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         double x = Double.parseDouble(fields[5]); // trip distance
         double y = Double.parseDouble(fields[11]); // fare amount
 
+        //DEBUGGING: trying to see if m and b are updating. (should be 0.001 1st iteration).
+        System.out.println("m : " + m + "b : " + b);
+        
         // calculates the shared error portion for partials
         // evaluates to all 0's for testing.csv
         double error = y - ((m * x) + b);
