@@ -18,8 +18,8 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
     public void setup(Context context) {
         //get the new m and b variable from previous iteration(should be 0.001 on 1st iteration)
         Configuration conf = context.getConfiguration();
-        m = Double.parseDouble(conf.get("m"));
-        b = Double.parseDouble(conf.get("b"));
+        System.out.println("current m : " + conf.get("m"));
+        System.out.println("current b : " + conf.get("b"));
     }
 
     @Override
@@ -29,7 +29,7 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         double y = Double.parseDouble(fields[11]); // fare amount
 
         //Checking to see if the m and b updated correctly after the reducer. should initially be 0.001.
-        System.out.println("DEBUGGING in mapper inital val: M = " + m + "B = " + b);
+        //System.out.println("DEBUGGING in mapper inital val: M = " + m + "B = " + b);
         
         // calculates the shared error portion for partials
         // evaluates to all 0's for testing.csv

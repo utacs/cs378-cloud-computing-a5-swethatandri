@@ -58,7 +58,7 @@ public class WordCount extends Configured implements Tool {
 			conf.set("b", Double.toString(b));
 
 			int num_iteration = 100;
-			for(int i = 0; i < num_iteration; i++) {
+			for(int i = 0; i < 5; i++) {
 				Job job = new Job(conf, "GradientDescentParams");
 				job.setJarByClass(WordCount.class);
 				//pass the m and b values to the mapper. Gets from conf.
@@ -78,20 +78,23 @@ public class WordCount extends Configured implements Tool {
 				//Get one final output
 				job.setNumReduceTasks(1);
 
-				//Job is completed.
 				if(!job.waitForCompletion(true)) {
 					return 1;
 				}
 
 				//update the m and b val with the new predicted values
-				m = Double.parseDouble(job.getConfiguration().get("new m"));
-				b = Double.parseDouble(job.getConfiguration().get("new b"));
+				System.out.println("new m: " + job.getConfiguration().get("new m"));
+				System.out.println("new b: " + job.getConfiguration().get("new b"));
 
-				conf.set("m", Double.toString(m));
-				conf.set("b", Double.toString(b));
-		}
+				//Checking to see if it gets predicted vals of m and b in reducer correctly
+				// System.out.println("DEBUGGING in driver after reducer: new M = " + m + "new B = " + b);
 
-		return 0;
+				//set m and b to config for next iteration.
+				// conf.set("m", Double.toString(m));
+				// conf.set("b", Double.toString(b));
+			}
+
+			return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
 			System.err.println("Error during mapreduce job.");
