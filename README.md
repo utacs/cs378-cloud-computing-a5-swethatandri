@@ -35,6 +35,9 @@ variable m	2.3693504
 variable b	8.64382
 
 Large data:
+Completion time : 27 min 27 sec
+variable m	2.2364414
+variable b	10.990246
 
 ```
 
