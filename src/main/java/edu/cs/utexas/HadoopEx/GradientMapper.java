@@ -14,13 +14,13 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
     private Text MapKey = new Text();
 	private DoubleWritable MapValue = new DoubleWritable();
 
-    @Override
-    public void setup(Context context) {
-        //get the new m and b variable from previous iteration
-        Configuration conf = context.getConfiguration();
-        m = Double.parseDouble(conf.get("m"));
-        b = Double.parseDouble(conf.get("b"));
-    }
+    // @Override
+    // public void setup(Context context) {
+    //     //get the new m and b variable from previous iteration
+    //     Configuration conf = context.getConfiguration();
+    //     m = Double.parseDouble(conf.get("m"));
+    //     b = Double.parseDouble(conf.get("b"));
+    // }
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -29,7 +29,7 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         double y = Double.parseDouble(fields[11]); // fare amount
 
         //DEBUGGING: trying to see if m and b are updating. (should be 0.001 1st iteration).
-        System.out.println("m : " + m + "b : " + b);
+        //System.out.println("m : " + m + "b : " + b);
         
         // calculates the shared error portion for partials
         // evaluates to all 0's for testing.csv
