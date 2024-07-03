@@ -6,7 +6,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class WordCountReducer extends  Reducer<Text, FloatWritable, FloatWritable, FloatWritable> {
+public class WordCountReducer extends  Reducer<Text, FloatWritable, Text, FloatWritable> {
 
     private float sumX = 0;
 	private float sumY = 0;
@@ -56,6 +56,7 @@ public class WordCountReducer extends  Reducer<Text, FloatWritable, FloatWritabl
         float b = numeratorB / denom;
 
         //Write calculated slope and intercept to context
-        context.write(new FloatWritable(m), new FloatWritable(b));
+        context.write(new Text("variable m"), new FloatWritable(m));
+        context.write(new Text("variable b"), new FloatWritable(b));
     }
 }

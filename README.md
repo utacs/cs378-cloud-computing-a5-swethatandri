@@ -26,7 +26,33 @@
     
 
 
-# Add your Project REPORT HERE 
+# Add your Project REPORT HERE
+
+# Task 1: simple linear regression
+```bash
+Small data:
+variable m	2.3693504
+variable b	8.64382
+
+Large data:
+
+```
+
+# Task 2: parameters using gradient descent
+```bash
+Small data:
+
+Large data:
+
+```
+
+# Task 3: fit multiple linear regression using gradient descent
+```bash
+Small data:
+
+Large data:
+
+```
 
 
 # Project Template
