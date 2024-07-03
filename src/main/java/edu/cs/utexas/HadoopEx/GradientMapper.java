@@ -9,8 +9,8 @@ import org.apache.hadoop.conf.Configuration;
 
 public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
     //should this be updated with the predicted m and b?
-    private double m = 2.0; 
-    private double b = 3.0;
+    private double m; 
+    private double b;
     private Text MapKey = new Text();
 	private DoubleWritable MapValue = new DoubleWritable();
 
@@ -18,8 +18,21 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
     public void setup(Context context) {
         //get the new m and b variable from previous iteration(should be 0.001 on 1st iteration)
         Configuration conf = context.getConfiguration();
-        System.out.println("current m : " + conf.get("m"));
-        System.out.println("current b : " + conf.get("b"));
+        String newMValue = conf.get("m");
+        String newBValue = conf.get("b");
+
+        m = Double.parseDouble(newMValue);
+        b = Double.parseDouble(newBValue);
+
+        // if (newMValue != null && newBValue != null) {
+        //     m = Double.parseDouble(newMValue);
+        //     b = Double.parseDouble(newBValue);
+        // } else {
+        //     // Handle the case where values are not properly set
+        //     m = 2;
+        //     b = 3;
+        //     System.err.println("ERROR: Unable to retrieve new m and b values from Configuration.");
+        // }
     }
 
     @Override

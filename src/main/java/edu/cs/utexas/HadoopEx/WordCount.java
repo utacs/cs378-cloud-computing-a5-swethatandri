@@ -54,11 +54,15 @@ public class WordCount extends Configured implements Tool {
 			double m = 0.001;
 			double b = 0.001;
 			//Set the m and b variables before mapping
+			//I am able to set the values of m and b
 			conf.set("m", Double.toString(m));
 			conf.set("b", Double.toString(b));
 
+			
+
 			int num_iteration = 100;
 			for(int i = 0; i < 5; i++) {
+				System.out.println("string of m and b : " + Double.toString(m) + "," + Double.toString(b));
 				Job job = new Job(conf, "GradientDescentParams");
 				job.setJarByClass(WordCount.class);
 				//pass the m and b values to the mapper. Gets from conf.
@@ -72,7 +76,15 @@ public class WordCount extends Configured implements Tool {
 
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
-				FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+				String newMValue = conf.get("new m");
+				String newBValue = conf.get("new b");
+		
+				m = Double.parseDouble(newMValue);
+				b = Double.parseDouble(newBValue);
+
+				System.out.println("new m and b after reducer : " + m + ", " + b);
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + i));
 				job.setOutputFormatClass(TextOutputFormat.class);
 
 				//Get one final output
@@ -81,17 +93,6 @@ public class WordCount extends Configured implements Tool {
 				if(!job.waitForCompletion(true)) {
 					return 1;
 				}
-
-				//update the m and b val with the new predicted values
-				System.out.println("new m: " + job.getConfiguration().get("new m"));
-				System.out.println("new b: " + job.getConfiguration().get("new b"));
-
-				//Checking to see if it gets predicted vals of m and b in reducer correctly
-				// System.out.println("DEBUGGING in driver after reducer: new M = " + m + "new B = " + b);
-
-				//set m and b to config for next iteration.
-				// conf.set("m", Double.toString(m));
-				// conf.set("b", Double.toString(b));
 			}
 
 			return 0;
