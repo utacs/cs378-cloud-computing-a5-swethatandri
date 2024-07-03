@@ -5,12 +5,22 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.conf.Configuration;
 
 public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-    private final double m = 2.0;
-    private final double b = 3.0;
+    //should this be updated with the predicted m and b?
+    private double m = 2.0; 
+    private double b = 3.0;
     private Text MapKey = new Text();
 	private DoubleWritable MapValue = new DoubleWritable();
+
+    @Override
+    public void setup(Context context) {
+        //get the new m and b variable from previous iteration
+        Configuration conf = context.getConfiguration();
+        m = Double.parseDouble(conf.get("m"));
+        b = Double.parseDouble(conf.get("b"));
+    }
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {

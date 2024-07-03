@@ -50,17 +50,40 @@ public class WordCount extends Configured implements Tool {
 			// return (job.waitForCompletion(true) ? 0 : 1);
 
 			//Task 2
+			//initialize m and b = learning rate
+			//update the value with each iteration and pass it onto the mapper
+			double m = 0.001;
+			double b = 0.001;
+
+			int num_iteration = 100; //uhhh where to put the for loops...
+
 			Job job = new Job(conf, "GradientDescentParams");
 			job.setJarByClass(WordCount.class);
+
+			//Set the m and b variables before mapping
+			conf.set("m", Double.toString(m));
+			conf.set("b", Double.toString(b));
+
+			//pass the m and b values to the mapper
 			job.setMapperClass(GradientMapper.class);
 			job.setReducerClass(GradientReducer.class);
+			
+			//update the m and b val with the new predicted values
+			m = Double.parseDouble(conf.get("m"));
+			b = Double.parseDouble(conf.get("b"));
+
+			//Write the new predicted val of m and b
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(DoubleWritable.class);
 			FileInputFormat.addInputPath(job, new Path(args[0]));
 			job.setInputFormatClass(TextInputFormat.class);
 			FileOutputFormat.setOutputPath(job, new Path(args[1]));
 			job.setOutputFormatClass(TextOutputFormat.class);
+
+			//Get one final output
 			job.setNumReduceTasks(1);
+
+			//Job is completed.
 			return (job.waitForCompletion(true) ? 0 : 1);
 
 

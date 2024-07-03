@@ -4,6 +4,8 @@ import java.io.IOException;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.conf.Configuration;
+
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     private static final double LEARNING_RATE = 0.001;
@@ -56,6 +58,11 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         // mPartial and bPartial = 0 in testing.csv
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
+
+        //updating the new predicted m and b?
+        Configuration conf = context.getConfiguration();
+        conf.set("m", Double.toString(m));
+        conf.set("b", Double.toString(b));
 
         // write out new predicted m and b
         context.write(new Text("m"), new DoubleWritable(m));
