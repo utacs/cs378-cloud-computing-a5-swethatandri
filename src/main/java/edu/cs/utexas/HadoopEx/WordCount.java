@@ -25,6 +25,8 @@ public class WordCount extends Configured implements Tool {
 	 * @throws Exception
 	 */
 
+    public static double LR = 0.001;
+
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(), new WordCount(), args);
 		System.exit(res);
@@ -55,7 +57,6 @@ public class WordCount extends Configured implements Tool {
 			//initialize m and b = learning rate
 			double m = 0.001;
 			double b = 0.001;
-			double LR = 0.001;
 			double prevCost = Double.MAX_VALUE;
 			double currCost = 0.0;
 			double precision = 0.000001;
