@@ -19,6 +19,15 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
     private double mSum = 0.0;
     private double bSum = 0.0;
     private double cost = 0.0;
+    private double learningRate; // Variable for learning rate
+
+    protected void setup(Context context) {
+        Configuration conf = context.getConfiguration();
+        m = Double.parseDouble(conf.get("m")); // Get initial value for m
+        b = Double.parseDouble(conf.get("b")); // Get initial value for b
+        learningRate = Double.parseDouble(conf.get("learningRate")); // Get learning rate from configuration
+    }
+
 
     @Override
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
@@ -63,7 +72,12 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         // ed discussion 1/N factor?
         cost = cost / count;
 
+        m -= learningRate * mPartial; // Update m using gradient descent
+        b -= learningRate * bPartial; // Update b using gradient descent
+
         //Adjusting the learning rate depending on cost?
+
+        /*
         if(cost < 2) {
             LEARNING_RATE = 0.05;
         } else if(cost > 2 && cost < 5) {
@@ -74,11 +88,19 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
             LEARNING_RATE = 0.6;
         }
 
-        // adjusts m and b based on partial deriv
+         */
+
+        /*
+         * 
+         *     // adjusts m and b based on partial deriv
         // unsure if learning rate supposed to be here
         // mPartial and bPartial = 0 in testing.csv
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
+         * 
+         */
+
+    
 
         //updating the new predicted m and b to config to pass new val to mapper in next iteration
         // Configuration conf = context.getConfiguration();

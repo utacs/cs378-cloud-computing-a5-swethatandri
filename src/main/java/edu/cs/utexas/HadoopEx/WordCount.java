@@ -68,6 +68,8 @@ public class WordCount extends Configured implements Tool {
 				// Set initial m and b values in configuration
 				conf.set("m", Double.toString(m));
 				conf.set("b", Double.toString(b));
+                conf.set("learningRate", Double.toString(LR)); // Pass learning rate to configuration as well
+
 	
 				Job job = Job.getInstance(conf, "GradientDescentParams");
 				job.setJarByClass(WordCount.class);
@@ -99,6 +101,15 @@ public class WordCount extends Configured implements Tool {
 				// Update m and b for next iteration
 				m = Double.parseDouble(conf.get("m"));
 				b = Double.parseDouble(conf.get("b"));
+                currCost = Double.parseDouble(conf.get("cost"));
+
+                 // Adjust learning rate based on cost comparison
+                 if (currCost < prevCost) {
+                    LR *= 1.05; // Increase learning rate
+                } else {
+                    LR *= 0.5; // Decrease learning rate
+                }
+
 
 				//Print out the cost value
 				System.out.println("Cost : "  + conf.get("cost"));
