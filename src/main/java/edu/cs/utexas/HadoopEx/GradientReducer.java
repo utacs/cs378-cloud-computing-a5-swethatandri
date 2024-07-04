@@ -1,16 +1,16 @@
 package edu.cs.utexas.HadoopEx;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
-    private static final double LEARNING_RATE = 0.001;
+    private double LEARNING_RATE = 0.01;
     public double m = 2.0;
     public double b = 3.0;
     private double count = 0.0;
@@ -18,6 +18,7 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
     private double bPartial = 0.0;
     private double mSum = 0.0;
     private double bSum = 0.0;
+    private double cost = 0.0;
 
     @Override
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
@@ -39,6 +40,9 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
             case "bGradient":
                 bSum = sum;
                 break;
+            case "cost":
+                cost = sum;
+                break;
             case "COUNT":
                 count = sum;
                 break;
@@ -55,14 +59,22 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         mPartial = (2 * mSum) / count;
         bPartial = (2 * bSum) / count;
 
+        // Calculate MSE
+        // ed discussion 1/N factor?
+        cost = cost / count;
+
+        //Adjusting the learning rate depending on cost?
+        if(cost < 1) {
+            LEARNING_RATE = 0.01;
+        } else {
+            LEARNING_RATE = 0.1;
+        }
         // adjusts m and b based on partial deriv
         // unsure if learning rate supposed to be here
         // mPartial and bPartial = 0 in testing.csv
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
 
-        // Calculate MSE
-        double cost = (bSum * bSum) / count;
 
         //updating the new predicted m and b to config to pass new val to mapper in next iteration
         // Configuration conf = context.getConfiguration();
