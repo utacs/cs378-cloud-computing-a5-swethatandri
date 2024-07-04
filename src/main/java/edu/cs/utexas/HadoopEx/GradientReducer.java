@@ -64,10 +64,14 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         cost = cost / count;
 
         //Adjusting the learning rate depending on cost?
-        if(cost < 1) {
+        if(cost < 2) {
             LEARNING_RATE = 0.05;
+        } else if(cost > 2 && cost < 5) {
+            LEARNING_RATE = 0.25;
+        } else if (cost < 10) {
+            LEARNING_RATE = 0.45;
         } else {
-            LEARNING_RATE = 0.5;
+            LEARNING_RATE = 0.6;
         }
 
         // adjusts m and b based on partial deriv
