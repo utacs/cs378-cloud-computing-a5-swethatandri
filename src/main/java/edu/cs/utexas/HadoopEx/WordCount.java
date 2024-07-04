@@ -112,8 +112,6 @@ public class WordCount extends Configured implements Tool {
 				prevCost = currCost;
 
 				//How to adjust the m and b val accoring to the cost calculated
-
-                
 			}
 
 			System.out.println("Final m : " + m);
