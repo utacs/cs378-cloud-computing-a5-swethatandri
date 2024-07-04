@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -14,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.fs.FileSystem;
 
 public class WordCount extends Configured implements Tool {
 
@@ -53,17 +55,21 @@ public class WordCount extends Configured implements Tool {
 			//initialize m and b = learning rate
 			double m = 0.001;
 			double b = 0.001;
-			//Set the m and b variables before mapping
-			//I am able to set the values of m and b
-			conf.set("m", Double.toString(m));
-			conf.set("b", Double.toString(b));
+			double LR = 0.001;
+			double prevCost = Double.MAX_VALUE;
+			double currCost = 0.0;
+			double precision = 0.000001;
 
-			
+			int num_iteration = 3;
+			while(num_iteration > 0) {
+				//Decrement num iteration
+				num_iteration--;
 
-			int num_iteration = 100;
-			for(int i = 0; i < 5; i++) {
-				System.out.println("string of m and b : " + Double.toString(m) + "," + Double.toString(b));
-				Job job = new Job(conf, "GradientDescentParams");
+				// Set initial m and b values in configuration
+				conf.set("m", Double.toString(m));
+				conf.set("b", Double.toString(b));
+	
+				Job job = Job.getInstance(conf, "GradientDescentParams");
 				job.setJarByClass(WordCount.class);
 				//pass the m and b values to the mapper. Gets from conf.
 				job.setMapperClass(GradientMapper.class);
@@ -77,24 +83,41 @@ public class WordCount extends Configured implements Tool {
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
 
-				String newMValue = conf.get("new m");
-				String newBValue = conf.get("new b");
-		
-				m = Double.parseDouble(newMValue);
-				b = Double.parseDouble(newBValue);
-
-				System.out.println("new m and b after reducer : " + m + ", " + b);
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + i));
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
 				job.setOutputFormatClass(TextOutputFormat.class);
 
 				//Get one final output
 				job.setNumReduceTasks(1);
 
-				if(!job.waitForCompletion(true)) {
-					return 1;
+				job.waitForCompletion(true);
+
+				// After completion, read m, b, and cost from SequenceFile
+				Path seqFilePath = new Path("/output/m_b_values.seq");
+				readParamsFromSequenceFile(seqFilePath, conf);
+
+				// // Update m and b for next iteration
+				// Update m and b for next iteration
+				m = Double.parseDouble(conf.get("m"));
+				b = Double.parseDouble(conf.get("b"));
+
+				//Print out the cost value
+				System.out.println("Cost : "  + conf.get("cost"));
+				currCost = Double.parseDouble(conf.get("cost"));
+
+				if(Math.abs(currCost - prevCost) < precision) {
+					System.out.println("Convergence");
+					break;
 				}
+
+				prevCost = currCost;
+
+				//How to adjust the m and b val accoring to the cost calculated
+
+                
 			}
 
+			System.out.println("Final m : " + m);
+			System.out.println("Final b : " + b);
 			return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
@@ -103,4 +126,30 @@ public class WordCount extends Configured implements Tool {
 			return 2;
 		}
 	}
+
+	private void readParamsFromSequenceFile(Path seqFilePath, Configuration conf) throws IOException {
+		FileSystem fs = FileSystem.get(conf);
+
+        SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePath, conf);
+        Text key = new Text();
+        DoubleWritable value = new DoubleWritable();
+
+        try {
+            while (reader.next(key, value)) {
+                System.out.println(key.toString() + " = " + value.get());
+                //key is m, b, and cost
+                if (key.toString().equals("m")) {
+                    conf.set("m", Double.toString(value.get()));
+                } else if (key.toString().equals("b")) {
+                    conf.set("b", Double.toString(value.get()));
+                } else if (key.toString().equals("cost")) {
+					conf.set("cost", Double.toString(value.get()));
+				}
+            }
+        } finally {
+            reader.close();
+
+			fs.delete(seqFilePath, true); 
+        }
+    }
 }

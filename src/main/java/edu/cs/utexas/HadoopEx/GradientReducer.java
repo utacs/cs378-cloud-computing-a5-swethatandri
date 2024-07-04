@@ -2,15 +2,17 @@ package edu.cs.utexas.HadoopEx;
 import java.io.IOException;
 
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.conf.Configuration;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     private static final double LEARNING_RATE = 0.001;
-    private double m = 2.0;
-    private double b = 3.0;
+    public double m = 2.0;
+    public double b = 3.0;
     private double count = 0.0;
     private double mPartial = 0.0;
     private double bPartial = 0.0;
@@ -59,13 +61,39 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
 
-        //updating the new predicted m and b to config to pass new val to mapper in next iteration
-        Configuration conf = context.getConfiguration();
-        conf.set("new m", Double.toString(m));
-        conf.set("new b", Double.toString(b));
+        // Calculate MSE
+        double cost = (bSum * bSum) / count;
 
+        //updating the new predicted m and b to config to pass new val to mapper in next iteration
+        // Configuration conf = context.getConfiguration();
+        // conf.set("m", Double.toString(m));
+        // conf.set("b", Double.toString(b));
+        writeParamsToSequenceFile(context, m, b, cost);
         // write out new predicted m and b
         context.write(new Text("m"), new DoubleWritable(m));
         context.write(new Text("b"), new DoubleWritable(b));
+        context.write(new Text("Cost"), new DoubleWritable(cost));
+        
+    }
+
+    private void writeParamsToSequenceFile(Context context, double m, double b, double cost) throws IOException {
+        Configuration conf = context.getConfiguration();
+        FileSystem fs = FileSystem.get(conf);
+
+        // Define the path for the SequenceFile
+        Path filePath = new Path("/output/m_b_values.seq");
+
+        // Create SequenceFile Writer
+        SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, filePath, Text.class, DoubleWritable.class);
+
+        try {
+            // Write m, b, and cost to SequenceFile
+            writer.append(new Text("m"), new DoubleWritable(m));
+            writer.append(new Text("b"), new DoubleWritable(b));
+            writer.append(new Text("cost"), new DoubleWritable(cost));
+        } finally {
+            // Close the writer
+            writer.close();
+        }
     }
 }
