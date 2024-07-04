@@ -65,16 +65,16 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
 
         //Adjusting the learning rate depending on cost?
         if(cost < 1) {
-            LEARNING_RATE = 0.01;
+            LEARNING_RATE = 0.05;
         } else {
-            LEARNING_RATE = 0.1;
+            LEARNING_RATE = 0.5;
         }
+
         // adjusts m and b based on partial deriv
         // unsure if learning rate supposed to be here
         // mPartial and bPartial = 0 in testing.csv
         m -= LEARNING_RATE * mPartial;
         b -= LEARNING_RATE * bPartial;
-
 
         //updating the new predicted m and b to config to pass new val to mapper in next iteration
         // Configuration conf = context.getConfiguration();
