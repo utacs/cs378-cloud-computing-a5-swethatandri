@@ -10,7 +10,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
-    private static final double LEARNING_RATE = 0.001;
+    private static final double LEARNING_RATE = 0.005;
     public double m = 2.0;
     public double b = 3.0;
     private double count = 0.0;

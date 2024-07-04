@@ -60,7 +60,7 @@ public class WordCount extends Configured implements Tool {
 			double currCost = 0.0;
 			double precision = 0.000001;
 
-			int num_iteration = 3;
+			int num_iteration = 100;
 			while(num_iteration > 0) {
 				//Decrement num iteration
 				num_iteration--;
@@ -104,7 +104,7 @@ public class WordCount extends Configured implements Tool {
 				System.out.println("Cost : "  + conf.get("cost"));
 				currCost = Double.parseDouble(conf.get("cost"));
 
-				if(Math.abs(currCost - prevCost) < precision) {
+				if(Math.abs(currCost) < precision) {
 					System.out.println("Convergence");
 					break;
 				}
