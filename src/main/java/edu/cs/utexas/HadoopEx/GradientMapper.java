@@ -1,11 +1,11 @@
 package edu.cs.utexas.HadoopEx;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.conf.Configuration;
 
 public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
     //should this be updated with the predicted m and b?
@@ -46,6 +46,10 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         MapKey.set("bGradient");
 		MapValue.set(bGradient);
         context.write(MapKey, MapValue);
+
+        MapKey.set("cost");
+		MapValue.set(error * error);
+		context.write(MapKey, MapValue);
 
         MapKey.set("COUNT");
 		MapValue.set(1.0);

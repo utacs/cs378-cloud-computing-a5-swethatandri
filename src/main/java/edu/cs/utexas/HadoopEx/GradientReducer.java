@@ -1,13 +1,13 @@
 package edu.cs.utexas.HadoopEx;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     private static final double LEARNING_RATE = 0.001;
@@ -18,6 +18,7 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
     private double bPartial = 0.0;
     private double mSum = 0.0;
     private double bSum = 0.0;
+    private double cost = 0.0;
 
     @Override
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
@@ -38,6 +39,9 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
                 break;
             case "bGradient":
                 bSum = sum;
+                break;
+            case "cost":
+                cost = sum;
                 break;
             case "COUNT":
                 count = sum;
@@ -62,7 +66,8 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         b -= LEARNING_RATE * bPartial;
 
         // Calculate MSE
-        double cost = (bSum * bSum) / count;
+        // ed discussion 1/N factor?
+        cost = cost / count;
 
         //updating the new predicted m and b to config to pass new val to mapper in next iteration
         // Configuration conf = context.getConfiguration();
@@ -81,7 +86,7 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         FileSystem fs = FileSystem.get(conf);
 
         // Define the path for the SequenceFile
-        Path filePath = new Path("/output/m_b_values.seq");
+        Path filePath = new Path("m_b_values.seq");
 
         // Create SequenceFile Writer
         SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, filePath, Text.class, DoubleWritable.class);
