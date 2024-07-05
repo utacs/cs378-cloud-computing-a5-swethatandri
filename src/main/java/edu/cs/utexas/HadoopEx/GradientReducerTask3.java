@@ -1,14 +1,18 @@
 package edu.cs.utexas.HadoopEx;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-
-import java.io.IOException;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     private double learningRate;
@@ -38,6 +42,8 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
 
         //Get learning rate from configuration.
         learningRate = Double.parseDouble(conf.get("learningRate"));
+        System.out.println("Learning rate: " + learningRate);
+        
     }
 
     @Override

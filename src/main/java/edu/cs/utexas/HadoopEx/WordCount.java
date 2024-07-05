@@ -159,7 +159,7 @@ public class WordCount extends Configured implements Tool {
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
 
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + "" + num_iteration));
 				job.setOutputFormatClass(TextOutputFormat.class);
 
 				//Get one final output
