@@ -82,11 +82,11 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
         cost = cost / (2 * totalCount);
 
         // updating bias variable, adjusting it differently similar to how we did in task 2.
-        params[0] -= learningRate * 100 * partialDerivs[0];
+        params[0] -= learningRate * 1000 * partialDerivs[0];
         // update the rest of the params. param length = 5.
         for(int i = 1; i < params.length; i++) {
             //params 1~4
-            params[i] -= learningRate * partialDerivs[i];
+            params[i] -= learningRate * 10 * partialDerivs[i];
         }
 
         //Write the params to the sequence file to get the val and update it in driver.

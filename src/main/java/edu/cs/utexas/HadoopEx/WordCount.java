@@ -25,7 +25,7 @@ public class WordCount extends Configured implements Tool {
 	 * @throws Exception
 	 */
 
-    public static double LR = 0.009;
+    public static double LR = 0.001;
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(), new WordCount(), args);
@@ -181,7 +181,7 @@ public class WordCount extends Configured implements Tool {
                 if (currCost < prevCost) {
                     LR *= 1.05; // Increase learning rate
                 } else {
-                    LR *= 0.5; // Decrease learning rate
+                    LR *= 0.1; // Decrease learning rate
                 }
 
 				//Print out the cost value after every iteration
