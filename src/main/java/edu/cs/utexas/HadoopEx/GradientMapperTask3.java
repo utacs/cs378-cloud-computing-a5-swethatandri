@@ -8,49 +8,68 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 
+//Mapper class for task 3: Finding multiple linear regression using fradient descent 
 public class GradientMapperTask3 extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-    private double w0;
-    private double w1;
-    private double w2;
-    private double w3;
-    private double w4;
-
-    private Text MapKey = new Text();
-    private DoubleWritable MapValue = new DoubleWritable();
+    // Holds all the "predicted" parameter values with each iteration(initally all 0.1).
+    private double[] params;
 
     @Override
     public void setup(Context context) {
         Configuration conf = context.getConfiguration();
-        w0 = Double.parseDouble(conf.get("w0"));
-        w1 = Double.parseDouble(conf.get("w1"));
-        w2 = Double.parseDouble(conf.get("w2"));
-        w3 = Double.parseDouble(conf.get("w3"));
-        w4 = Double.parseDouble(conf.get("w4"));
+        // Create array to hold all variables using vectorization.
+        params = new double[5];
+        // get all param vals from the conf set in driver.
+        for(int i = 0; i < params.length; i++) {
+            params[i] = Double.parseDouble(conf.get("w" + i));
+        }
     }
 
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        // Split the data line read from the file.
         String[] fields = value.toString().split(",");
+
         if (cleanUpData(fields)) {
-            double x0 = 1.0; // Bias term
-            double x1 = Double.parseDouble(fields[4]); // Trip time in seconds
-            double x2 = Double.parseDouble(fields[5]); // Trip distance in miles
-            double x3 = Double.parseDouble(fields[11]); // Fare amount in dollars
-            double x4 = Double.parseDouble(fields[15]); // Tolls amount in dollars
-            double y = Double.parseDouble(fields[16]); // Total amount paid in dollars
+            // Create array to hold the actual data read from file.
+            double[] actualData = new double[4];
+            // insert all necessary variables: trip_time, trip_dist, fare_amt, toll_amt
+            actualData[0] = Double.parseDouble(fields[4]); 
+            actualData[1] = Double.parseDouble(fields[5]); 
+            actualData[2] = Double.parseDouble(fields[11]);
+            actualData[3] = Double.parseDouble(fields[15]); 
+            // Total amount: the value we want to predict
+            double y = Double.parseDouble(fields[16]);
 
-            double prediction = w0 * x0 + w1 * x1 + w2 * x2 + w3 * x3 + w4 * x4;
-            double error = y - prediction;
+            // Find the prediction with: predY = w0 + w1x1 + w2x2 ... wnxn
+            double pred = params[0]; //bias, nothing done to it for pred.
+            for(int i = 1; i <= actualData.length; i++) {
+                pred += params[i] * actualData[i-1];
+            }
 
-            context.write(new Text("w0Gradient"), new DoubleWritable(-2 * x0 * error));
-            context.write(new Text("w1Gradient"), new DoubleWritable(-2 * x1 * error));
-            context.write(new Text("w2Gradient"), new DoubleWritable(-2 * x2 * error));
-            context.write(new Text("w3Gradient"), new DoubleWritable(-2 * x3 * error));
-            context.write(new Text("w4Gradient"), new DoubleWritable(-2 * x4 * error));
+            // Calculate difference between predY and actual y value
+            double error = y - pred;
+
+            context.write(new Text("Count"), new DoubleWritable(1.0));
+            context.write(new Text("Cost"), new DoubleWritable(error * error));
+
+            // bias, "b val for t3". Basically emits the error directly
+            context.write(new Text("w0"), new DoubleWritable(error)); 
+            //compute the partial derivates for each parameter before the summation (xi*(actual y - pred y))
+            for(int i = 1; i <= actualData.length; i++) {
+                context.write(new Text("w" + i), new DoubleWritable(error * actualData[i-1]));
+            }
         }
     }
 
+    // Helper method to find invalid lines. Return false if it is invalid, true if valid.
     private boolean cleanUpData(String[] data) {
+
+        //Additional check: if there is 17 attributes.
+        if(data.length != 17) {
+            //Invalid line
+            return false;
+        }
+
         try {
             int trip_time = Integer.parseInt(data[4]);
             if (trip_time < 120 || trip_time > 3600) {

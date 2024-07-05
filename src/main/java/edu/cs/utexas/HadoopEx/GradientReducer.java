@@ -56,8 +56,6 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
                 count = sum;
                 break;
         }
-        // use to check count (N)
-        // context.write (new Text("count"), new DoubleWritable(count));
     }
 
     @Override
@@ -75,37 +73,6 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         m -= learningRate * mPartial; // Update m using gradient descent
         b -= learningRate * 100*bPartial; // Update b using gradient descent
 
-        //Adjusting the learning rate depending on cost?
-
-        /*
-        if(cost < 2) {
-            LEARNING_RATE = 0.05;
-        } else if(cost > 2 && cost < 5) {
-            LEARNING_RATE = 0.25;
-        } else if (cost < 10) {
-            LEARNING_RATE = 0.45;
-        } else {
-            LEARNING_RATE = 0.6;
-        }
-
-         */
-
-        /*
-         * 
-         *     // adjusts m and b based on partial deriv
-        // unsure if learning rate supposed to be here
-        // mPartial and bPartial = 0 in testing.csv
-        m -= LEARNING_RATE * mPartial;
-        b -= LEARNING_RATE * bPartial;
-         * 
-         */
-
-    
-
-        //updating the new predicted m and b to config to pass new val to mapper in next iteration
-        // Configuration conf = context.getConfiguration();
-        // conf.set("m", Double.toString(m));
-        // conf.set("b", Double.toString(b));
         writeParamsToSequenceFile(context, m, b, cost);
         // write out new predicted m and b
         context.write(new Text("m"), new DoubleWritable(m));
