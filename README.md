@@ -52,6 +52,8 @@ Large data:
 # Task 3: fit multiple linear regression using gradient descent
 ```bash
 Small data:
+Cost : 23.465757322607804
+Final Values: w0: 10.809542789703205, w1: 5.031754250565101E-4, w2: 1.477341081780779, w3: 0.4476357857514438, w4: 0.3239640191951284
 
 Large data:
 

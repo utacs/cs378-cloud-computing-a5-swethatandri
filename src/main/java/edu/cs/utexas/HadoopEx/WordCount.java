@@ -167,7 +167,7 @@ public class WordCount extends Configured implements Tool {
 				job.waitForCompletion(true);
 
 				// After completion, read all variables and cost from seq file.
-				Path seqFilePath = new Path("/output/m_b_values.seq");
+				Path seqFilePath = new Path("m_b_values.seq");
 				T3readParamsFromSequenceFile(seqFilePath, conf);
 
 				// Update all variables for next iteration

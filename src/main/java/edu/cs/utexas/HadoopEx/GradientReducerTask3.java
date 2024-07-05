@@ -106,7 +106,7 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
         FileSystem fs = FileSystem.get(conf);
 
         // Define the path for the SequenceFile
-        Path filePath = new Path("/output/m_b_values.seq");
+        Path filePath = new Path("m_b_values.seq");
 
         // Create SequenceFile Writer
         SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, filePath, Text.class, DoubleWritable.class);
