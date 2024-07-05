@@ -140,55 +140,109 @@ public class WordCount extends Configured implements Tool {
 		 //Task 3
 
         /*
-         * 	double w0 = 0.0;
-			double w1 = 0.0;
-			double w2 = 0.0;
-			double w3 = 0.0;
-			double w4 = 0.0;
-			double learningRate = 0.001;
-			int NUM_ITERATIONS = 100;
+         * //Task 3
+  
 
-			for (int i = 0; i < NUM_ITERATIONS; i++) {
-				Configuration iterationConf = new Configuration();
-				iterationConf.set("w0", Double.toString(w0));
-				iterationConf.set("w1", Double.toString(w1));
-				iterationConf.set("w2", Double.toString(w2));
-				iterationConf.set("w3", Double.toString(w3));
-				iterationConf.set("w4", Double.toString(w4));
-				iterationConf.set("learningRate", Double.toString(learningRate));
+         	double prev_m1 = 0.1;
+		double prev_m2 = 0.1;
+		double prev_m3 = 0.1;
+		double prev_m4 = 0.1;
+		double prev_b = 0.1;
 
-				Job job = Job.getInstance(iterationConf, "Gradient Descent Task 3 - Iteration " + (i + 1));
-				job.setJarByClass(WordCount.class);
-				job.setMapperClass(GradientMapperTask3.class);
-				job.setReducerClass(GradientReducerTask3.class);
-				job.setOutputKeyClass(Text.class);
-				job.setOutputValueClass(DoubleWritable.class);
+            	double curr_m1 = 0.1;
+	    	double curr_m2 = 0.1;
+	    	double curr_m3 = 0.1;
+		double curr_m4 = 0.1;
+		double curr_b = 0.1;
 
-				FileInputFormat.addInputPath(job, new Path(args[0]));
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_iteration_" + (i + 1)));
+            	double next_m1 = 0.1;
+		double next_m2 = 0.1;
+		double next_m3 = 0.1;
+		double next_m4 = 0.1;
+		double next_b = 0.1;
 
-				job.waitForCompletion(true);
+            	double prevCost = Double.MAX_VALUE;
+		double currCost = 0.0;
+		//double cost = 0.0;
+		//double learningRate = 0.001;
+		int NUM_ITERATIONS = 15;
 
-				// Retrieve updated parameters from job output
-				Path outputPath = new Path(args[1] + "_iteration_" + (i + 1) + "/part-r-00000");
-				FileSystem fs = FileSystem.get(conf);
-				FSDataInputStream inputStream = fs.open(outputPath);
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-				String line;
-				Map<String, Double> parameters = new HashMap<>();
-				while ((line = reader.readLine()) != null) {
-					String[] parts = line.split("\t");
-					parameters.put(parts[0], Double.parseDouble(parts[1]));
-				}
-				reader.close();
+		for (int i = 0; i < NUM_ITERATIONS; i++) {
+			Configuration iterationConf = new Configuration();
+			iterationConf.set("m1", Double.toString(next_m1));
+			iterationConf.set("m2", Double.toString(next_m2));
+			iterationConf.set("m3", Double.toString(next_m3));
+			iterationConf.set("m4", Double.toString(next_m4));
+			iterationConf.set("b", Double.toString(next_b));
+			iterationConf.set("learningRate", Double.toString(LR));
 
-				w0 = parameters.get("w0");
-				w1 = parameters.get("w1");
-				w2 = parameters.get("w2");
-				w3 = parameters.get("w3");
-				w4 = parameters.get("w4");
+                	curr_m1 = next_m1;
+                	curr_m2 = next_m2;
+                	curr_m3 = next_m3;
+                	curr_m4 = next_m4;
+                	curr_b = next_b;
 
-				System.out.println("Iteration " + (i + 1) + ": w0 = " + w0 + ", w1 = " + w1 + ", w2 = " + w2 + ", w3 = " + w3 + ", w4 = " + w4);
+			Job job = Job.getInstance(iterationConf, "Gradient Descent Task 3 - Iteration " + (i + 1));
+			job.setJarByClass(WordCount.class);
+			job.setMapperClass(GradientMapperTask3.class);
+			job.setReducerClass(GradientReducerTask3.class);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(DoubleWritable.class);
+
+			FileInputFormat.addInputPath(job, new Path(args[0]));
+			FileOutputFormat.setOutputPath(job, new Path(args[1] + "_iteration_" + (i + 1)));
+
+			job.waitForCompletion(true);
+
+                	//currCost = Double.parseDouble(conf.get("cost"));
+
+			// Retrieve updated parameters from job output
+			Path outputPath = new Path(args[1] + "_iteration_" + (i + 1) + "/part-r-00000");
+			FileSystem fs = FileSystem.get(conf);
+			FSDataInputStream inputStream = fs.open(outputPath);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+			String line;
+			HashMap<String, Double> parameters = new HashMap<>();
+			while ((line = reader.readLine()) != null) {
+				String[] parts = line.split("\t");
+				parameters.put(parts[0], Double.parseDouble(parts[1]));
+			}
+			reader.close();
+
+                	//These are values for the next iteration - if we accept them
+			next_m1 = parameters.get("m1");
+			next_m2 = parameters.get("m2");
+			next_m3 = parameters.get("m3");
+			next_m4 = parameters.get("m4");
+			next_b = parameters.get("b");
+                	currCost = parameters.get("cost");
+
+			System.out.println("Before adjustment in Iteration " + (i + 1) + ": next m1 = " + next_m1 + ", next m2 = " + next_m2 + ", next m3 = " + next_m3 + ", next m4 = " + next_m4 + ", next b = " + next_b + ", " + "curr cost= " + currCost + ", previous cost= " + prevCost);      
+
+                //current cost is associated with previous m1
+
+                	if (currCost < prevCost) {
+                    // we like the parameters that generated the currCost -- so save the snapshot
+                    		prev_m1 = curr_m1;
+                    		prev_m2 = curr_m2;
+                    		prev_m3 = curr_m3;
+                    		prev_m4 = curr_m4;
+                    		prev_b = curr_b;
+                    		prevCost = currCost;
+        
+                	} else {
+
+                    		LR /= 10; // Decrease learning rate
+
+                    		//we want to go back to the last good value which is previous set
+                    		next_m1 = prev_m1;
+				next_m2 = prev_m2;
+				next_m3 = prev_m3;
+                    		next_m4 = prev_m4;
+                    		next_b = prev_b;
+                    		currCost = prevCost;
+                	}
+			System.out.println("after adjustment in Iteration " + (i + 1) + ": next m1 = " + next_m1 + ", next m2 = " + next_m2 + ", next m3 = " + next_m3 + ", next m4 = " + next_m4 + ", next b = " + next_b + ", " + "curr cost= " + currCost);
 			}
 
 			return 0;
