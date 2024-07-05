@@ -50,7 +50,9 @@ Final m : 2.3689076533559996
 Final b : 8.649912112565776
 
 Large data:
-
+m	2.3739809429446983
+b	8.995136677271985
+Cost	52.84244782323212
 ```
 
 # Task 3: fit multiple linear regression using gradient descent
