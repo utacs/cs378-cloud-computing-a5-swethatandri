@@ -37,6 +37,7 @@ variable b	8.64382
 
 ```bash
 Large data:
+Completion time : 27 min 27 sec
 variable m	2.2364414
 variable b	10.990246
 
