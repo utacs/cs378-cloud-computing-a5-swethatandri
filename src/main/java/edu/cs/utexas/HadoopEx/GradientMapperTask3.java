@@ -16,7 +16,6 @@ public class GradientMapperTask3 extends Mapper<LongWritable, Text, Text, Double
     @Override
     public void setup(Context context) {
         Configuration conf = context.getConfiguration();
-        // Create array to hold all variables using vectorization.
         params = new double[5];
         // get all param vals from the conf set in driver.
         for(int i = 0; i < params.length; i++) {
@@ -41,7 +40,7 @@ public class GradientMapperTask3 extends Mapper<LongWritable, Text, Text, Double
             double y = Double.parseDouble(fields[16]);
 
             // Find the prediction with: predY = w0 + w1x1 + w2x2 ... wnxn
-            double pred = params[0]; //bias, nothing done to it for pred.
+            double pred = params[0]; 
             for(int i = 1; i <= actualData.length; i++) {
                 pred += params[i] * actualData[i-1];
             }
@@ -52,7 +51,7 @@ public class GradientMapperTask3 extends Mapper<LongWritable, Text, Text, Double
             context.write(new Text("Count"), new DoubleWritable(1.0));
             context.write(new Text("Cost"), new DoubleWritable(error * error));
 
-            // bias, "b val for t3". Basically emits the error directly
+            // bias, "b val for t3".
             context.write(new Text("w0"), new DoubleWritable(error)); 
             //compute the partial derivates for each parameter before the summation (xi*(actual y - pred y))
             for(int i = 1; i <= actualData.length; i++) {
@@ -61,7 +60,11 @@ public class GradientMapperTask3 extends Mapper<LongWritable, Text, Text, Double
         }
     }
 
-    // Helper method to find invalid lines. Return false if it is invalid, true if valid.
+    /**
+     * Helper method to clean up invalid lines of data based on the assignment requirements.
+     * @param data array of all the 17 attributes
+     * @return true if it's a valid line, false otherwise.
+     */
     private boolean cleanUpData(String[] data) {
 
         //Additional check: if there is 17 attributes.

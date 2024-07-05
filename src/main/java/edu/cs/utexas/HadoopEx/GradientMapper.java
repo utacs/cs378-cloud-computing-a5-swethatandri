@@ -8,12 +8,15 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
-    //should this be updated with the predicted m and b?
     public double m; 
     public double b;
     private Text MapKey = new Text();
 	private DoubleWritable MapValue = new DoubleWritable();
 
+    /**
+     * Helper set up method to pass in predicted m and b values between iterations
+     * @param context context we're writing on
+     */
     @Override
     public void setup(Context context) {
         //Get the updated val of m and b, initially 0.001
@@ -22,6 +25,12 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
         b = Double.parseDouble(conf.get("b"));
     }
 
+    /**
+     * Method to map calculated error values prior to summation
+     * @param key the respective key for the map we are adding to
+     * @param value the respective value pair for the map we are adding to
+     * @param context context we're writing on
+     */
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] fields = value.toString().split(",");
@@ -36,7 +45,7 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
             // evaluates to all 0's for testing.csv
             double error = y - ((m * x) + b);
 
-            // calculates individual partial formulas (before applying sum and outside operations)
+            // calculates individual partial deriv formulas (before applying sum and outside operations)
             // adds to mapper
             double mGradient = -x * (error);
             MapKey.set("mGradient");
@@ -48,20 +57,23 @@ public class GradientMapper extends Mapper<LongWritable, Text, Text, DoubleWrita
             MapValue.set(bGradient);
             context.write(MapKey, MapValue);
 
+            // cost function
             MapKey.set("cost");
             MapValue.set(error * error);
             context.write(MapKey, MapValue);
 
+            // logs each entry as count (N) val
             MapKey.set("COUNT");
             MapValue.set(1.0);
             context.write(MapKey, MapValue);
         }
     }
 
-    /*
-	 * helper method to clean up data. Return true if the line doesn't have any errors,
-	 * false if there is.
-	 */
+    /**
+     * Helper method to clean up invalid lines of data based on the assignment requirements.
+     * @param data array of all the 17 attributes
+     * @return true if it's a valid line, false otherwise.
+     */
 	private boolean cleanUpData(String[] data) {
 		try {
 			//trip time less than 2 min or greater than 1 hr

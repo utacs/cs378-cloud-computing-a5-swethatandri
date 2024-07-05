@@ -5,14 +5,10 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, DoubleWritable> {
     private double learningRate;
@@ -20,15 +16,20 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
     private double totalCount = 0.0;
     //Hold values for all paramters(w0,w1,w2,w3,w4)
     private double[] params;
-    //Hold the partial derivative values for all params.
+    //Hold the summation of values for all params.
     private double[] gradientSums;
+    //Hold the partial derivatives for all params
     private double[] partialDerivs;
     private double cost = 0.0;
 
+    /**
+     * Helper method to set up the reducer with new parameter vals
+     * and initializes output holding arrays
+     * @param context context we're writing on
+     */
     @Override
     public void setup(Context context) {
         Configuration conf = context.getConfiguration();
-
         //get current values for all parameters.
         params = new double[5];
         for(int i = 0; i < params.length; i++) {
@@ -41,21 +42,24 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
         partialDerivs = new double[5];
 
         //Get learning rate from configuration.
-        learningRate = Double.parseDouble(conf.get("learningRate"));
-        System.out.println("Learning rate: " + learningRate);
-        
+        learningRate = Double.parseDouble(conf.get("learningRate")); 
     }
 
+    /**
+     * Method to reduce the map entries by summing all vals w/ the same key and
+     * sets calculated cost 
+     * @param key keys of the map pairs we are processing
+     * @param values values of the map pairs we are processing
+     * @param context context we're writing on
+     */
     @Override
     protected void reduce(Text key, Iterable<DoubleWritable> values, Context context) throws IOException, InterruptedException {
-        double sum = 0.0;
 
+        double sum = 0.0;
         //sums up all vals with the same key
         for (DoubleWritable val : values) {
             sum += val.get();
         }
-
-        //TO DO: ADD the COST variable in mapper and reducer too...
         
         //Set sum to each of the corresponding variables.
         if(key.toString().equals("Count")) {
@@ -65,16 +69,18 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
         } else {
             //extract the ith val of the parameters: getting the 1 from w1, and so on.
             int index = Integer.parseInt(key.toString().substring(1));
-            //Get the gradient sums for all parameters.
             gradientSums[index] = sum;
         }
     }
 
+    /**
+     * Method to clean up the data and calculate the new values and cost.
+     * @param context the context we're writing on
+     */
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         //Find the partial deriv for all parameters. gradientsums length = 5
         for(int i = 0; i < gradientSums.length; i++) {
-            //Includes partial deriv for bias variable.
             partialDerivs[i] = (-1 * gradientSums[i]) / totalCount;
         }
 
@@ -83,7 +89,6 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
 
         // updating bias variable, adjusting it differently similar to how we did in task 2.
         params[0] -= learningRate * 1000 * partialDerivs[0];
-        // update the rest of the params. param length = 5.
         for(int i = 1; i < params.length; i++) {
             //params 1~4
             params[i] -= learningRate * 10 * partialDerivs[i];
@@ -96,11 +101,18 @@ public class GradientReducerTask3 extends Reducer<Text, DoubleWritable, Text, Do
         for(int i = 0; i < params.length; i++) {
             context.write(new Text("w" + i), new DoubleWritable(params[i]));
         }
-        
+        //Write cost to context.
         context.write(new Text("Cost"), new DoubleWritable(cost));
     }
 
-    //Helper method to write the reduced vals: updated params and cost to a sequence file.
+    /**
+     * Method to write the newly calculated parameter values and cost to sequence file to pass it over to the
+     * driver. Writes all the parameter vals and cost to sequential file.
+     * @param context context we're writing on
+     * @param param array of currently parameter values
+     * @param cost cost function of the current iteration
+     * @throws IOException
+     */
     private void writeParamsToSequenceFile(Context context, double[] param, double cost) throws IOException {
         Configuration conf = context.getConfiguration();
         FileSystem fs = FileSystem.get(conf);

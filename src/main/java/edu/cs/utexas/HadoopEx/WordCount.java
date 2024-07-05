@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -25,7 +26,11 @@ public class WordCount extends Configured implements Tool {
 	 * @throws Exception
 	 */
 
-    public static double LR = 0.001;
+	//Initial learning rate for t2 and t3 are different.
+	// t2 initial learning rate:
+    // public static double LR = 0.009;
+	// t3 initial learning rate:
+	// public static double LR = 0.001;
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(), new WordCount(), args);
@@ -33,104 +38,105 @@ public class WordCount extends Configured implements Tool {
 	}
 
 	/**
-	 * 
+	 * Main driver to run the jobs for each task.
 	 */
 	public int run(String args[]) {
 		try {
 			Configuration conf = new Configuration();
 
 			//Task 1
-			// Job job = new Job(conf, "LinearRegression");
-			// job.setJarByClass(WordCount.class);
-			// job.setMapperClass(WordCountMapper.class);
-			// job.setReducerClass(WordCountReducer.class);
-			// job.setOutputKeyClass(Text.class);
-			// job.setOutputValueClass(FloatWritable.class);
-			// FileInputFormat.addInputPath(job, new Path(args[0]));
-			// job.setInputFormatClass(TextInputFormat.class);
-			// FileOutputFormat.setOutputPath(job, new Path(args[1]));
-			// job.setOutputFormatClass(TextOutputFormat.class);
-			// job.setNumReduceTasks(1);
-			// return (job.waitForCompletion(true) ? 0 : 1);
+			Job job = new Job(conf, "LinearRegression");
+			job.setJarByClass(WordCount.class);
+			job.setMapperClass(WordCountMapper.class);
+			job.setReducerClass(WordCountReducer.class);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(FloatWritable.class);
+			FileInputFormat.addInputPath(job, new Path(args[0]));
+			job.setInputFormatClass(TextInputFormat.class);
+			FileOutputFormat.setOutputPath(job, new Path(args[1]));
+			job.setOutputFormatClass(TextOutputFormat.class);
+			job.setNumReduceTasks(1);
+			return (job.waitForCompletion(true) ? 0 : 1);
 
 			//Task 2
-			//initialize m and b = learning rate
-			double m = LR;
-			double b = LR;
-			double prevCost = Double.MAX_VALUE;
-			double currCost = 0.0;
-			double precision = 0.000001;
+			//initialize all the necessary variables.
+			// double m = LR;
+			// double b = LR;
+			// double prevCost = Double.MAX_VALUE;
+			// double currCost = 0.0;
+			// double precision = 0.000001;
 
-			int num_iteration = 100;
-			while(num_iteration > 0) {
-				//Decrement num iteration
-				num_iteration--;
+			// int num_iteration = 100;
+			// while(num_iteration > 0) {
+			// 	//Decrement num iteration
+			// 	num_iteration--;
 
-				// Set initial m and b values in configuration
-				conf.set("m", Double.toString(m));
-				conf.set("b", Double.toString(b));
-                conf.set("learningRate", Double.toString(LR)); // Pass learning rate to configuration as well
+			// 	// Set initial m and b values in configuration
+			// 	conf.set("m", Double.toString(m));
+			// 	conf.set("b", Double.toString(b));
+			// 	// Pass learning rate to configuration
+            //     conf.set("learningRate", Double.toString(LR)); 
 
-	
-				Job job = Job.getInstance(conf, "GradientDescentParams");
-				job.setJarByClass(WordCount.class);
-				//pass the m and b values to the mapper. Gets from conf.
-				job.setMapperClass(GradientMapper.class);
-				//reducer sets new m and b val to conf
-				job.setReducerClass(GradientReducer.class);
+			// 	Job job = Job.getInstance(conf, "GradientDescentParams");
+			// 	job.setJarByClass(WordCount.class);
+			// 	//pass the m and b values to the mapper. Gets from conf.
+			// 	job.setMapperClass(GradientMapper.class);
+			// 	//reducer sets new m and b val to conf
+			// 	job.setReducerClass(GradientReducer.class);
 
-				//Write the new predicted val of m and b
-				job.setOutputKeyClass(Text.class);
-				job.setOutputValueClass(DoubleWritable.class);
+			// 	//Write the new predicted val of m and b
+			// 	job.setOutputKeyClass(Text.class);
+			// 	job.setOutputValueClass(DoubleWritable.class);
 
-				FileInputFormat.addInputPath(job, new Path(args[0]));
-				job.setInputFormatClass(TextInputFormat.class);
+			// 	FileInputFormat.addInputPath(job, new Path(args[0]));
+			// 	job.setInputFormatClass(TextInputFormat.class);
 
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
-				job.setOutputFormatClass(TextOutputFormat.class);
+			// 	FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
+			// 	job.setOutputFormatClass(TextOutputFormat.class);
 
-				//Get one final output
-				job.setNumReduceTasks(1);
+			// 	//Get one final output
+			// 	job.setNumReduceTasks(1);
 
-				job.waitForCompletion(true);
+			// 	job.waitForCompletion(true);
 
-				// After completion, read m, b, and cost from SequenceFile
-				Path seqFilePath = new Path("m_b_values.seq");
-				readParamsFromSequenceFile(seqFilePath, conf);
+			// 	// After completion, read m, b, and cost from SequenceFile
+			// 	Path seqFilePath = new Path("m_b_values.seq");
+			// 	readParamsFromSequenceFile(seqFilePath, conf);
 
-				// // Update m and b for next iteration
-				// Update m and b for next iteration
-				m = Double.parseDouble(conf.get("m"));
-				b = Double.parseDouble(conf.get("b"));
-                currCost = Double.parseDouble(conf.get("cost"));
+			// 	// // Update m and b for next iteration
+			// 	// Update m and b for next iteration
+			// 	m = Double.parseDouble(conf.get("m"));
+			// 	b = Double.parseDouble(conf.get("b"));
+            //     currCost = Double.parseDouble(conf.get("cost"));
 
-                 // Adjust learning rate based on cost comparison
-                 if (currCost < prevCost) {
-                    LR *= 1.05; // Increase learning rate
-                } else {
-                    LR *= 0.5; // Decrease learning rate
-                }
+            //      // Adjust learning rate based on cost comparison
+            //      if (currCost < prevCost) {
+            //         LR *= 1.05; // Increase learning rate
+            //     } else {
+            //         LR *= 0.5; // Decrease learning rate
+            //     }
 
 
-				//Print out the cost value
-				System.out.println("Cost : "  + conf.get("cost"));
-				currCost = Double.parseDouble(conf.get("cost"));
+			// 	//Print out the cost value
+			// 	System.out.println("Cost : "  + conf.get("cost"));
+			// 	currCost = Double.parseDouble(conf.get("cost"));
 
-				if(Math.abs(currCost - prevCost) < precision) {
-					System.out.println("Convergence");
-					break;
-				}
+			// 	if(Math.abs(currCost - prevCost) < precision) {
+			// 		System.out.println("Convergence");
+			// 		break;
+			// 	}
 
-				prevCost = currCost;
+			// 	prevCost = currCost;
 
-				//How to adjust the m and b val accoring to the cost calculated
-			}
+			// 	//How to adjust the m and b val accoring to the cost calculated
+			// }
 
-			System.out.println("Final m : " + m);
-			System.out.println("Final b : " + b);
+			// System.out.println("Final m : " + m);
+			// System.out.println("Final b : " + b);
+
+			// return 0;
 
 			//Task 3
-
 			//Initialize variables to 0.1
 			// double[] params = {0.1, 0.1, 0.1, 0.1, 0.1};
 			// double currCost = 0.0;
@@ -208,7 +214,7 @@ public class WordCount extends Configured implements Tool {
 
 			// System.out.println(finalValString.toString());
 			
-			return 0;
+			// return 0;
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
 			System.err.println("Error during mapreduce job.");
@@ -217,9 +223,16 @@ public class WordCount extends Configured implements Tool {
 		}
 	}
 
+	/**
+	 * Method to read the updated parameters for task 2 from the sequential file created in the reducer.
+	 * Reads the m, b, and cost variable and sets it to configuration.
+	 * @param seqFilePath path to the sequential file
+	 * @param conf current configuration for job.
+	 */
 	private void readParamsFromSequenceFile(Path seqFilePath, Configuration conf) throws IOException {
 		FileSystem fs = FileSystem.get(conf);
 
+		// create new seq file reader / output writer
         SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePath, conf);
         Text key = new Text();
         DoubleWritable value = new DoubleWritable();
@@ -243,10 +256,16 @@ public class WordCount extends Configured implements Tool {
         }
     }
 
-	//Helper method to read the updated variables calculated in reducer.
+	/**
+	 * Method to read the updated parameters for task 3 from the sequential file created in the reducer.
+	 * Reads all values for the parameters and cost, setting it to configuration.
+	 * @param seqFilePath path to the sequential file
+	 * @param conf current configuration for job.
+	 */
 	private void T3readParamsFromSequenceFile(Path seqFilePath, Configuration conf) throws IOException {
 		FileSystem fs = FileSystem.get(conf);
 
+		// create new seq file reader / output writer
         SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePath, conf);
         Text key = new Text();
         DoubleWritable value = new DoubleWritable();
