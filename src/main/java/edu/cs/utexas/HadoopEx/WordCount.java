@@ -86,7 +86,7 @@ public class WordCount extends Configured implements Tool {
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
 
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + "" + num_iteration));
 				job.setOutputFormatClass(TextOutputFormat.class);
 
 				//Get one final output
@@ -95,7 +95,7 @@ public class WordCount extends Configured implements Tool {
 				job.waitForCompletion(true);
 
 				// After completion, read m, b, and cost from SequenceFile
-				Path seqFilePath = new Path("m_b_values.seq");
+				Path seqFilePath = new Path("mbvalues.seq");
 				readParamsFromSequenceFile(seqFilePath, conf);
 
 				// // Update m and b for next iteration
