@@ -25,7 +25,7 @@ public class WordCount extends Configured implements Tool {
 	 * @throws Exception
 	 */
 
-    public static double LR = 0.001;
+    public static double LR = 0.009;
 
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(), new WordCount(), args);
@@ -55,8 +55,8 @@ public class WordCount extends Configured implements Tool {
 
 			//Task 2
 			//initialize m and b = learning rate
-			double m = 0.001;
-			double b = 0.001;
+			double m = LR;
+			double b = LR;
 			double prevCost = Double.MAX_VALUE;
 			double currCost = 0.0;
 			double precision = 0.000001;
@@ -95,7 +95,7 @@ public class WordCount extends Configured implements Tool {
 				job.waitForCompletion(true);
 
 				// After completion, read m, b, and cost from SequenceFile
-				Path seqFilePath = new Path("/output/m_b_values.seq");
+				Path seqFilePath = new Path("m_b_values.seq");
 				readParamsFromSequenceFile(seqFilePath, conf);
 
 				// // Update m and b for next iteration
@@ -116,7 +116,7 @@ public class WordCount extends Configured implements Tool {
 				System.out.println("Cost : "  + conf.get("cost"));
 				currCost = Double.parseDouble(conf.get("cost"));
 
-				if(Math.abs(currCost) < precision) {
+				if(Math.abs(currCost - prevCost) < precision) {
 					System.out.println("Convergence");
 					break;
 				}

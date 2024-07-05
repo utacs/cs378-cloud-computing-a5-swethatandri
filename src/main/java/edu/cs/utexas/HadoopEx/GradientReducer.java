@@ -73,7 +73,7 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         cost = cost / count;
 
         m -= learningRate * mPartial; // Update m using gradient descent
-        b -= learningRate * bPartial; // Update b using gradient descent
+        b -= learningRate * 100*bPartial; // Update b using gradient descent
 
         //Adjusting the learning rate depending on cost?
 
@@ -119,7 +119,7 @@ public class GradientReducer extends Reducer<Text, DoubleWritable, Text, DoubleW
         FileSystem fs = FileSystem.get(conf);
 
         // Define the path for the SequenceFile
-        Path filePath = new Path("/output/m_b_values.seq");
+        Path filePath = new Path("m_b_values.seq");
 
         // Create SequenceFile Writer
         SequenceFile.Writer writer = SequenceFile.createWriter(fs, conf, filePath, Text.class, DoubleWritable.class);
