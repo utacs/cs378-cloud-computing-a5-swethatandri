@@ -44,6 +44,10 @@ variable b	10.990246
 # Task 2: parameters using gradient descent
 ```bash
 Small data:
+Cost : 54.87096141091008
+Convergence
+Final m : 2.3689076533559996
+Final b : 8.649912112565776
 
 Large data:
 

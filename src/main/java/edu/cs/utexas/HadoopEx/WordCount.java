@@ -55,158 +55,158 @@ public class WordCount extends Configured implements Tool {
 
 			//Task 2
 			//initialize m and b = learning rate
-			// double m = LR;
-			// double b = LR;
-			// double prevCost = Double.MAX_VALUE;
-			// double currCost = 0.0;
-			// double precision = 0.000001;
-
-			// int num_iteration = 100;
-			// while(num_iteration > 0) {
-			// 	//Decrement num iteration
-			// 	num_iteration--;
-
-			// 	// Set initial m and b values in configuration
-			// 	conf.set("m", Double.toString(m));
-			// 	conf.set("b", Double.toString(b));
-            //     conf.set("learningRate", Double.toString(LR)); // Pass learning rate to configuration as well
-
-	
-			// 	Job job = Job.getInstance(conf, "GradientDescentParams");
-			// 	job.setJarByClass(WordCount.class);
-			// 	//pass the m and b values to the mapper. Gets from conf.
-			// 	job.setMapperClass(GradientMapper.class);
-			// 	//reducer sets new m and b val to conf
-			// 	job.setReducerClass(GradientReducer.class);
-
-			// 	//Write the new predicted val of m and b
-			// 	job.setOutputKeyClass(Text.class);
-			// 	job.setOutputValueClass(DoubleWritable.class);
-
-			// 	FileInputFormat.addInputPath(job, new Path(args[0]));
-			// 	job.setInputFormatClass(TextInputFormat.class);
-
-			// 	FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
-			// 	job.setOutputFormatClass(TextOutputFormat.class);
-
-			// 	//Get one final output
-			// 	job.setNumReduceTasks(1);
-
-			// 	job.waitForCompletion(true);
-
-			// 	// After completion, read m, b, and cost from SequenceFile
-			// 	Path seqFilePath = new Path("m_b_values.seq");
-			// 	readParamsFromSequenceFile(seqFilePath, conf);
-
-			// 	// // Update m and b for next iteration
-			// 	// Update m and b for next iteration
-			// 	m = Double.parseDouble(conf.get("m"));
-			// 	b = Double.parseDouble(conf.get("b"));
-            //     currCost = Double.parseDouble(conf.get("cost"));
-
-            //      // Adjust learning rate based on cost comparison
-            //      if (currCost < prevCost) {
-            //         LR *= 1.05; // Increase learning rate
-            //     } else {
-            //         LR *= 0.5; // Decrease learning rate
-            //     }
-
-
-			// 	//Print out the cost value
-			// 	System.out.println("Cost : "  + conf.get("cost"));
-			// 	currCost = Double.parseDouble(conf.get("cost"));
-
-			// 	if(Math.abs(currCost - prevCost) < precision) {
-			// 		System.out.println("Convergence");
-			// 		break;
-			// 	}
-
-			// 	prevCost = currCost;
-
-			// 	//How to adjust the m and b val accoring to the cost calculated
-			// }
-
-			// System.out.println("Final m : " + m);
-			// System.out.println("Final b : " + b);
-
-			//Task 3
-
-			//Initialize variables to 0.1
-			double[] params = {0.1, 0.1, 0.1, 0.1, 0.1};
-			double currCost = 0.0;
+			double m = LR;
+			double b = LR;
 			double prevCost = Double.MAX_VALUE;
-			double precision = 0.00001;
+			double currCost = 0.0;
+			double precision = 0.000001;
 
-			//Max number of iterations.
 			int num_iteration = 100;
 			while(num_iteration > 0) {
+				//Decrement num iteration
 				num_iteration--;
-				//Set all 5 variables for the mapper
-				for(int j = 0; j < params.length; j++) {
-					conf.set("w" + j, Double.toString(params[j]));
-				}
-				// pass learning rate in conf for the reducer to use.
-				conf.set("learningRate", Double.toString(LR));
 
-				Job job = Job.getInstance(conf, "GD_task3");
+				// Set initial m and b values in configuration
+				conf.set("m", Double.toString(m));
+				conf.set("b", Double.toString(b));
+                conf.set("learningRate", Double.toString(LR)); // Pass learning rate to configuration as well
+
+	
+				Job job = Job.getInstance(conf, "GradientDescentParams");
 				job.setJarByClass(WordCount.class);
-				job.setMapperClass(GradientMapperTask3.class);
-				job.setReducerClass(GradientReducerTask3.class);
+				//pass the m and b values to the mapper. Gets from conf.
+				job.setMapperClass(GradientMapper.class);
+				//reducer sets new m and b val to conf
+				job.setReducerClass(GradientReducer.class);
 
+				//Write the new predicted val of m and b
 				job.setOutputKeyClass(Text.class);
 				job.setOutputValueClass(DoubleWritable.class);
 
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				job.setInputFormatClass(TextInputFormat.class);
 
-				FileOutputFormat.setOutputPath(job, new Path(args[1] + "" + num_iteration));
+				FileOutputFormat.setOutputPath(job, new Path(args[1] + "_" + num_iteration));
 				job.setOutputFormatClass(TextOutputFormat.class);
 
 				//Get one final output
 				job.setNumReduceTasks(1);
+
 				job.waitForCompletion(true);
 
-				// After completion, read all variables and cost from seq file.
+				// After completion, read m, b, and cost from SequenceFile
 				Path seqFilePath = new Path("m_b_values.seq");
-				T3readParamsFromSequenceFile(seqFilePath, conf);
+				readParamsFromSequenceFile(seqFilePath, conf);
 
-				// Update all variables for next iteration
-				for(int j = 0; j < params.length; j++) {
-					params[j] = Double.parseDouble(conf.get("w" + j));
-				}
-				//Update current cost.
+				// // Update m and b for next iteration
+				// Update m and b for next iteration
+				m = Double.parseDouble(conf.get("m"));
+				b = Double.parseDouble(conf.get("b"));
                 currCost = Double.parseDouble(conf.get("cost"));
 
-                // Adjust learning rate based on cost comparison
-                if (currCost < prevCost) {
+                 // Adjust learning rate based on cost comparison
+                 if (currCost < prevCost) {
                     LR *= 1.05; // Increase learning rate
                 } else {
-                    LR *= 0.1; // Decrease learning rate
+                    LR *= 0.5; // Decrease learning rate
                 }
 
-				//Print out the cost value after every iteration
-				System.out.println("Cost : "  + currCost);
 
-				//Break out early.
+				//Print out the cost value
+				System.out.println("Cost : "  + conf.get("cost"));
+				currCost = Double.parseDouble(conf.get("cost"));
+
 				if(Math.abs(currCost - prevCost) < precision) {
 					System.out.println("Convergence");
 					break;
 				}
 
-				//Update prev cost with the current cost
 				prevCost = currCost;
+
+				//How to adjust the m and b val accoring to the cost calculated
 			}
 
-			//print out the final values of the parameters.
-			StringBuilder finalValString = new StringBuilder("Final Values: ");
-			for (int i = 0; i < params.length; i++) {
-				finalValString.append("w").append(i).append(": ").append(params[i]);
-				if (i < params.length - 1) {
-					finalValString.append(", ");
-				}
-			}
+			System.out.println("Final m : " + m);
+			System.out.println("Final b : " + b);
 
-			System.out.println(finalValString.toString());
+			//Task 3
+
+			//Initialize variables to 0.1
+			// double[] params = {0.1, 0.1, 0.1, 0.1, 0.1};
+			// double currCost = 0.0;
+			// double prevCost = Double.MAX_VALUE;
+			// double precision = 0.00001;
+
+			// //Max number of iterations.
+			// int num_iteration = 100;
+			// while(num_iteration > 0) {
+			// 	num_iteration--;
+			// 	//Set all 5 variables for the mapper
+			// 	for(int j = 0; j < params.length; j++) {
+			// 		conf.set("w" + j, Double.toString(params[j]));
+			// 	}
+			// 	// pass learning rate in conf for the reducer to use.
+			// 	conf.set("learningRate", Double.toString(LR));
+
+			// 	Job job = Job.getInstance(conf, "GD_task3");
+			// 	job.setJarByClass(WordCount.class);
+			// 	job.setMapperClass(GradientMapperTask3.class);
+			// 	job.setReducerClass(GradientReducerTask3.class);
+
+			// 	job.setOutputKeyClass(Text.class);
+			// 	job.setOutputValueClass(DoubleWritable.class);
+
+			// 	FileInputFormat.addInputPath(job, new Path(args[0]));
+			// 	job.setInputFormatClass(TextInputFormat.class);
+
+			// 	FileOutputFormat.setOutputPath(job, new Path(args[1] + "" + num_iteration));
+			// 	job.setOutputFormatClass(TextOutputFormat.class);
+
+			// 	//Get one final output
+			// 	job.setNumReduceTasks(1);
+			// 	job.waitForCompletion(true);
+
+			// 	// After completion, read all variables and cost from seq file.
+			// 	Path seqFilePath = new Path("m_b_values.seq");
+			// 	T3readParamsFromSequenceFile(seqFilePath, conf);
+
+			// 	// Update all variables for next iteration
+			// 	for(int j = 0; j < params.length; j++) {
+			// 		params[j] = Double.parseDouble(conf.get("w" + j));
+			// 	}
+			// 	//Update current cost.
+            //     currCost = Double.parseDouble(conf.get("cost"));
+
+            //     // Adjust learning rate based on cost comparison
+            //     if (currCost < prevCost) {
+            //         LR *= 1.05; // Increase learning rate
+            //     } else {
+            //         LR *= 0.1; // Decrease learning rate
+            //     }
+
+			// 	//Print out the cost value after every iteration
+			// 	System.out.println("Cost : "  + currCost);
+
+			// 	//Break out early.
+			// 	if(Math.abs(currCost - prevCost) < precision) {
+			// 		System.out.println("Convergence");
+			// 		break;
+			// 	}
+
+			// 	//Update prev cost with the current cost
+			// 	prevCost = currCost;
+			// }
+
+			// //print out the final values of the parameters.
+			// StringBuilder finalValString = new StringBuilder("Final Values: ");
+			// for (int i = 0; i < params.length; i++) {
+			// 	finalValString.append("w").append(i).append(": ").append(params[i]);
+			// 	if (i < params.length - 1) {
+			// 		finalValString.append(", ");
+			// 	}
+			// }
+
+			// System.out.println(finalValString.toString());
 			
 			return 0;
 
