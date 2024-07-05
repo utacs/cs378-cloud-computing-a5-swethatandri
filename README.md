@@ -33,9 +33,10 @@
 Small data:
 variable m	2.3693504
 variable b	8.64382
+```
 
+```bash
 Large data:
-Completion time : 27 min 27 sec
 variable m	2.2364414
 variable b	10.990246
 
@@ -48,7 +49,9 @@ Cost : 54.87096141091008
 Convergence
 Final m : 2.3689076533559996
 Final b : 8.649912112565776
+```
 
+```bash
 Large data:
 m	2.3739809429446983
 b	8.995136677271985
@@ -60,7 +63,8 @@ Cost	52.84244782323212
 Small data:
 Cost : 23.465757322607804
 Final Values: w0: 10.809542789703205, w1: 5.031754250565101E-4, w2: 1.477341081780779, w3: 0.4476357857514438, w4: 0.3239640191951284
-
+```
+```bash
 Large data:
 
 ```
